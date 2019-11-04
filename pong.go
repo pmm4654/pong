@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -86,15 +87,19 @@ func main() {
 
 	// Big Game Loop
 
-	player1 := paddle{position{50, 100}, 20, 100, color{255, 255, 255}}
-	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, color{255, 255, 255}}
-	ball := ball{position{300, 300}, 20, 2, 2, color{255, 255, 255}}
+	player1 := paddle{position{50, 100}, 20, 100, 300, color{255, 255, 255}}
+	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, 300, color{255, 255, 255}}
+	ball := ball{position{300, 300}, 20, 400, 400, color{255, 255, 255}}
 
 	// this is balically an array that has arepresentation of every key and whether or not a key is being pressed
 	// it keeps you from having to check each event manually yourslef in the game loop
 	keyState := sdl.GetKeyboardState()
 
+	var frameStart time.Time
+	var elapsedTime float32
+
 	for {
+		frameStart = time.Now()
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
@@ -103,9 +108,9 @@ func main() {
 		}
 		clear(pixels)
 
-		player1.update(keyState)
+		player1.update(keyState, elapsedTime)
 		player2.aiUpdate(&ball)
-		ball.update(&player1, &player2)
+		ball.update(&player1, &player2, elapsedTime)
 
 		player1.draw(pixels)
 		player2.draw(pixels)
@@ -114,7 +119,12 @@ func main() {
 		texture.Update(nil, pixels, winWidth*4)
 		renderer.Copy(texture, nil, nil)
 		renderer.Present()
-		sdl.Delay(16)
+
+		elapsedTime = float32(time.Since(frameStart).Seconds())
+		if elapsedTime < .005 { // if elapsed time was 5 ms, about 200 fps (1 / .005)
+			sdl.Delay(5 - uint32(elapsedTime/1000.0)) // delay until we get to 5 ms
+			elapsedTime = float32(time.Since(frameStart).Seconds())
+		}
 	}
 
 	// sdl.Delay(2000)
