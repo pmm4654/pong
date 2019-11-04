@@ -2,7 +2,7 @@ package main
 
 type ball struct {
 	position
-	radius int
+	radius float32
 	xVel   float32 // velocity
 	yVel   float32 // velocity
 	color  color
@@ -14,34 +14,39 @@ func (ball *ball) draw(pixels []byte) {
 	for y := -ball.radius; y < ball.radius; y++ {
 		for x := -ball.radius; x < ball.radius; x++ {
 			if x*x+y*y < ball.radius*ball.radius { // if x is outside of the radius
-				setPixel(int(ball.x)+x, int(ball.y)+y, ball.color, pixels)
+				setPixel(int(ball.x+x), int(ball.y+y), ball.color, pixels)
 			}
 		}
 	}
 }
 
-func (ball *ball) update(leftPaddle *paddle, rightPaddle *paddle) {
-	ball.x += ball.xVel
-	ball.y += ball.yVel
+func getCenter() position {
+	return position{float32(winWidth) / 2, float32(winHeight) / 2}
+}
+
+func (ball *ball) update(leftPaddle *paddle, rightPaddle *paddle, elapsedTime float32) {
+	ball.x += ball.xVel * elapsedTime
+	ball.y += ball.yVel * elapsedTime
 
 	// handle colisions with top and bottom (bounce it off)
-	if int(ball.y)-ball.radius < 0 || int(ball.y)+ball.radius > winHeight {
+	if ball.y-ball.radius < 0 || ball.y+ball.radius > float32(winHeight) {
 		ball.yVel = -ball.yVel
 	}
 
-	if int(ball.x)-ball.radius < 0 || int(ball.x)+ball.radius > winWidth {
-		ball.x = 300
-		ball.y = 300
+	if ball.x-ball.radius < 0 || ball.x+ball.radius > float32(winWidth) {
+		ball.position = getCenter()
+		// ball.x = 300
+		// ball.y = 300
 	}
 
-	if int(ball.x) < int(leftPaddle.x)+leftPaddle.w/2 {
-		if int(ball.y) > int(leftPaddle.y)-leftPaddle.h/2 && int(ball.y) < int(leftPaddle.y)+leftPaddle.h/2 {
+	if ball.x-ball.radius < leftPaddle.x+leftPaddle.w/2 {
+		if ball.y > leftPaddle.y-leftPaddle.h/2 && ball.y < leftPaddle.y+leftPaddle.h/2 {
 			ball.xVel = -ball.xVel
 		}
 	}
 
-	if int(ball.x) > int(rightPaddle.x)-rightPaddle.w/2 {
-		if int(ball.y) > int(rightPaddle.y)-rightPaddle.h/2 && int(ball.y) < int(rightPaddle.y)+rightPaddle.h/2 {
+	if ball.x+ball.radius > rightPaddle.x-rightPaddle.w/2 {
+		if ball.y > rightPaddle.y-rightPaddle.h/2 && ball.y < rightPaddle.y+rightPaddle.h/2 {
 			ball.xVel = -ball.xVel
 		}
 	}
