@@ -24,6 +24,18 @@ type position struct {
 	x, y float32
 }
 
+// -- this is the syntax for emum
+type gameState int
+
+const (
+	start gameState = iota // 0
+	play                   // 1
+)
+
+//
+
+var state = start
+
 func setPixel(x int, y int, c color, pixels []byte) {
 	index := (y*winWidth + x) * 4
 
@@ -87,8 +99,8 @@ func main() {
 
 	// Big Game Loop
 
-	player1 := paddle{position{50, 100}, 20, 100, 300, color{255, 255, 255}}
-	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, 300, color{255, 255, 255}}
+	player1 := paddle{position{50, 100}, 20, 100, 300, 0, color{255, 255, 255}}
+	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, 300, 0, color{255, 255, 255}}
 	ball := ball{position{300, 300}, 20, 400, 400, color{255, 255, 255}}
 
 	// this is balically an array that has arepresentation of every key and whether or not a key is being pressed
@@ -106,12 +118,22 @@ func main() {
 				return
 			}
 		}
+		if state == play {
+			drawNumber(getCenter(), color{255, 255, 255}, 20, player1.score, pixels)
+			player1.update(keyState, elapsedTime)
+			player2.aiUpdate(&ball)
+			ball.update(&player1, &player2, elapsedTime)
+		} else if state == start {
+			if keyState[sdl.SCANCODE_SPACE] != 0 { // reset score
+				if player1.score == 3 || player2.score == 3 { // only reset the score if one player has won (3 is winning here)
+					player1.score = 0
+					player2.score = 0
+				}
+				state = play
+			}
+		}
+
 		clear(pixels)
-
-		player1.update(keyState, elapsedTime)
-		player2.aiUpdate(&ball)
-		ball.update(&player1, &player2, elapsedTime)
-
 		player1.draw(pixels)
 		player2.draw(pixels)
 		ball.draw(pixels)

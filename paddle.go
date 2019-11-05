@@ -7,7 +7,16 @@ type paddle struct {
 	w        float32
 	h        float32
 	speed    float32
+	score    int
 	color    color
+}
+
+// lerp (linear interpolation) will get you the number in between 2 values
+// [1				10]
+// 1 + .5 * (10 - 1) = 5.5
+
+func lerp(a float32, b float32, pct float32) float32 {
+	return a + pct*(b-a)
 }
 
 func (paddle *paddle) draw(pixels []byte) {
@@ -28,6 +37,9 @@ func (paddle *paddle) draw(pixels []byte) {
 			setPixel(startX+x, startY+y, paddle.color, pixels)
 		}
 	}
+
+	numX := lerp(paddle.x, getCenter().x, 0.2)
+	drawNumber(position{numX, 35}, paddle.color, 10, paddle.score, pixels)
 }
 
 func (paddle *paddle) update(keyState []uint8, elapsedTime float32) {
