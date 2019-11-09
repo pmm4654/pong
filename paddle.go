@@ -28,7 +28,7 @@ func lerp(a float32, b float32, pct float32) float32 {
 }
 
 func (paddle *paddle) middleZoneSize() float32 {
-	return paddle.h * .3
+	return paddle.h * .5
 }
 
 func (paddle *paddle) draw(pixels []byte) {
@@ -73,10 +73,21 @@ func (paddle *paddle) update(keyState []uint8, controllerAxis int16, elapsedTime
 }
 
 func (paddle *paddle) aiUpdate(ball *ball, elapsedTime float32) {
-	if ball.y > paddle.y {
-		paddle.y += paddle.speed * elapsedTime
+	if ball.y > paddle.y { // if ball is below the paddle
+		// if ball is moving right
+		// and the ball is on the bottom half of the screen
+		// and on the right half of the screen (bouncing off the bottom or about to)
+		if ball.xVel > 0 && ball.y > float32(winHeight) && ball.x > float32(winWidth)/2 {
+			paddle.y -= paddle.speed * elapsedTime // you want to move up
+		} else {
+			paddle.y += paddle.speed * elapsedTime // you want to move down
+		}
 	}
-	if ball.y < paddle.y {
-		paddle.y -= paddle.speed * elapsedTime
+	if ball.y < paddle.y { // if the ball is above the paddle
+		if ball.xVel > 0 && ball.y < float32(winHeight) && ball.x < float32(winWidth)/2 { // if ball is moving right and on the right half of the screen (bouncing off the top)
+			paddle.y += paddle.speed * elapsedTime // you want to move down
+		} else {
+			paddle.y -= paddle.speed * elapsedTime
+		}
 	}
 }

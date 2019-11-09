@@ -2,10 +2,26 @@ package main
 
 type ball struct {
 	position
-	radius float32
-	xVel   float32 // velocity
-	yVel   float32 // velocity
-	color  color
+	radius      float32
+	xVel        float32 // velocity
+	yVel        float32 // velocity
+	color       color
+	initialXVel float32
+	initialYVel float32
+}
+
+func (ball *ball) setInitialVelocities() {
+	ball.initialXVel = ball.xVel
+	ball.initialYVel = ball.yVel
+}
+
+func (ball *ball) reset(leftPaddle *paddle, rightPaddle *paddle) {
+	centerPos := getCenter() // set ball x and y back to center
+	ball.position = centerPos
+	ball.xVel = ball.initialXVel
+	ball.yVel = ball.initialYVel
+	leftPaddle.y = centerPos.y
+	rightPaddle.y = centerPos.y
 }
 
 // miniumim translation vector
@@ -43,7 +59,8 @@ func (ball *ball) update(leftPaddle *paddle, rightPaddle *paddle, elapsedTime fl
 		state = start
 	} else if ball.x+ball.radius > float32(winWidth) {
 		leftPaddle.score++
-		ball.position = getCenter() // set ball x and y back to center
+		ball.reset(leftPaddle, rightPaddle)
+
 		state = start
 	}
 

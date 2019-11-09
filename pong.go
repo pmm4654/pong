@@ -108,7 +108,14 @@ func main() {
 
 	player1 := paddle{position{50, 100}, 20, 100, 300, 0, color{255, 255, 255}}
 	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, currentAi.speed, 0, color{255, 255, 255}}
-	ball := ball{position{300, 300}, 20, 400, 400, color{255, 255, 255}}
+	ball := ball{
+		position: position{300, 300},
+		radius:   20,
+		xVel:     400,
+		yVel:     400,
+		color:    color{255, 255, 255},
+	}
+	ball.setInitialVelocities()
 
 	// this is balically an array that has arepresentation of every key and whether or not a key is being pressed
 	// it keeps you from having to check each event manually yourslef in the game loop
