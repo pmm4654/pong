@@ -104,9 +104,10 @@ func main() {
 	pixels := make([]byte, winWidth*winHeight*4)
 
 	// Big Game Loop
+	currentAi := aiSettings{speed: 300}
 
 	player1 := paddle{position{50, 100}, 20, 100, 300, 0, color{255, 255, 255}}
-	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, 300, 0, color{255, 255, 255}}
+	player2 := paddle{position{float32(winWidth) - 50, 100}, 20, 100, currentAi.speed, 0, color{255, 255, 255}}
 	ball := ball{position{300, 300}, 20, 400, 400, color{255, 255, 255}}
 
 	// this is balically an array that has arepresentation of every key and whether or not a key is being pressed
@@ -136,7 +137,7 @@ func main() {
 		if state == play {
 			drawNumber(getCenter(), color{255, 255, 255}, 20, player1.score, pixels)
 			player1.update(keyState, controllerAxis, elapsedTime)
-			player2.aiUpdate(&ball)
+			player2.aiUpdate(&ball, elapsedTime)
 			ball.update(&player1, &player2, elapsedTime)
 		} else if state == start {
 			if keyState[sdl.SCANCODE_SPACE] != 0 { // reset score

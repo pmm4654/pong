@@ -15,12 +15,20 @@ type paddle struct {
 	color    color
 }
 
+type aiSettings struct {
+	speed float32
+}
+
 // lerp (linear interpolation) will get you the number in between 2 values
 // [1				10]
 // 1 + .5 * (10 - 1) = 5.5
 
 func lerp(a float32, b float32, pct float32) float32 {
 	return a + pct*(b-a)
+}
+
+func (paddle *paddle) middleZoneSize() float32 {
+	return paddle.h * .3
 }
 
 func (paddle *paddle) draw(pixels []byte) {
@@ -64,6 +72,11 @@ func (paddle *paddle) update(keyState []uint8, controllerAxis int16, elapsedTime
 
 }
 
-func (paddle *paddle) aiUpdate(ball *ball) {
-	paddle.y = ball.y
+func (paddle *paddle) aiUpdate(ball *ball, elapsedTime float32) {
+	if ball.y > paddle.y {
+		paddle.y += paddle.speed * elapsedTime
+	}
+	if ball.y < paddle.y {
+		paddle.y -= paddle.speed * elapsedTime
+	}
 }

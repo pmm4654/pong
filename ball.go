@@ -16,7 +16,7 @@ func (ball *ball) draw(pixels []byte) {
 	// Draw this entire rectangle and if the pixels is outside of the radius of the start point, don't draw it
 	for y := -ball.radius; y < ball.radius; y++ {
 		for x := -ball.radius; x < ball.radius; x++ {
-			if x*x+y*y < ball.radius*ball.radius { // if x is outside of the radius
+			if x*x+y*y < ball.radius*ball.radius { // if x is outside of the radius (pythagorean theorum)
 				setPixel(int(ball.x+x), int(ball.y+y), ball.color, pixels)
 			}
 		}
@@ -36,6 +36,7 @@ func (ball *ball) update(leftPaddle *paddle, rightPaddle *paddle, elapsedTime fl
 		ball.yVel = -ball.yVel
 	}
 
+	// someone scored
 	if ball.x-ball.radius < 0 {
 		rightPaddle.score++
 		ball.position = getCenter() // set ball x and y back to center
@@ -46,17 +47,28 @@ func (ball *ball) update(leftPaddle *paddle, rightPaddle *paddle, elapsedTime fl
 		state = start
 	}
 
-	if ball.x-ball.radius < leftPaddle.x+leftPaddle.w/2 {
-		if ball.y > leftPaddle.y-leftPaddle.h/2 && ball.y < leftPaddle.y+leftPaddle.h/2 {
+	if ball.x-ball.radius < leftPaddle.x+leftPaddle.w/2 { // if the ball has the potential to hit the paddle on the left (the x considering the radius is the same)
+		if ball.y > leftPaddle.y-leftPaddle.h/2 && ball.y < leftPaddle.y+leftPaddle.h/2 { // if the ball is at the same y axis as the paddle's y range
 			ball.xVel = -ball.xVel
-			ball.x = leftPaddle.x + leftPaddle.w/2.0 + ball.radius
+			// reverse the x velocity
+			if ball.y > leftPaddle.y-leftPaddle.middleZoneSize() { // if we hit the top side of the paddle outside of the middleZone
+				ball.yVel *= 1.05
+			}
+
+			if ball.y < leftPaddle.y-leftPaddle.middleZoneSize() { // if we hit the bottom side of the paddle outside of the middleZone
+				ball.yVel *= 1.05
+			}
+			ball.x = leftPaddle.x + leftPaddle.w/2.0 + ball.radius // make the that the ball doesn't get stuck on the paddle
 		}
 	}
 
-	if ball.x+ball.radius > rightPaddle.x-rightPaddle.w/2 {
+	if ball.x+ball.radius > rightPaddle.x-rightPaddle.w/2 { // ball collides with the right paddle going right
 		if ball.y > rightPaddle.y-rightPaddle.h/2 && ball.y < rightPaddle.y+rightPaddle.h/2 {
-			ball.xVel = -ball.xVel
-			ball.x = rightPaddle.x - rightPaddle.w/2.0 - ball.radius
+			ball.xVel = -ball.xVel // reverse the x velocity
+			if ball.y > rightPaddle.h/2 {
+
+			}
+			ball.x = rightPaddle.x - rightPaddle.w/2.0 - ball.radius // make the that the ball doesn't get stuck on the paddle
 		}
 	}
 }
