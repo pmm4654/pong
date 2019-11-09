@@ -95,6 +95,12 @@ func main() {
 	}
 	defer texture.Destroy()
 
+	var controllerHandlers []*sdl.GameController
+	for i := 0; i < sdl.NumJoysticks(); i++ {
+		controllerHandlers = append(controllerHandlers, sdl.GameControllerOpen(i))
+		defer controllerHandlers[i].Close()
+	}
+
 	pixels := make([]byte, winWidth*winHeight*4)
 
 	// Big Game Loop
@@ -109,6 +115,7 @@ func main() {
 
 	var frameStart time.Time
 	var elapsedTime float32
+	var controllerAxis int16
 
 	for {
 		frameStart = time.Now()
@@ -118,9 +125,17 @@ func main() {
 				return
 			}
 		}
+
+		// for joysticks
+		for _, controller := range controllerHandlers {
+			if controller != nil {
+				controllerAxis = controller.Axis(sdl.CONTROLLER_AXIS_LEFTY)
+			}
+		}
+
 		if state == play {
 			drawNumber(getCenter(), color{255, 255, 255}, 20, player1.score, pixels)
-			player1.update(keyState, elapsedTime)
+			player1.update(keyState, controllerAxis, elapsedTime)
 			player2.aiUpdate(&ball)
 			ball.update(&player1, &player2, elapsedTime)
 		} else if state == start {

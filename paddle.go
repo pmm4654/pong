@@ -1,6 +1,10 @@
 package main
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"math"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type paddle struct {
 	position // this will look for a struct called position and bring its attributes in (you also get all of its receiver functions)
@@ -42,7 +46,7 @@ func (paddle *paddle) draw(pixels []byte) {
 	drawNumber(position{numX, 35}, paddle.color, 10, paddle.score, pixels)
 }
 
-func (paddle *paddle) update(keyState []uint8, elapsedTime float32) {
+func (paddle *paddle) update(keyState []uint8, controllerAxis int16, elapsedTime float32) {
 	if keyState[sdl.SCANCODE_UP] != 0 { // 0 if key is not being pressed, 0 if it is being pressed
 		paddle.y -= paddle.speed * elapsedTime
 	}
@@ -50,6 +54,14 @@ func (paddle *paddle) update(keyState []uint8, elapsedTime float32) {
 	if keyState[sdl.SCANCODE_DOWN] != 0 {
 		paddle.y += paddle.speed * elapsedTime
 	}
+
+	// can't trust that joysticks are always standing still - so we want to set a threshold so that the paddles doesn't just float around
+	if math.Abs(float64(controllerAxis)) > 1500 {
+		// 32767 is the max value of a float32 (i guess) so this is checking how complete of a joystick movement you have done
+		pct := float32(controllerAxis) / 32767.0
+		paddle.y += paddle.speed * pct * elapsedTime // max speed * pct of the way your joystick is pressed in and then scale it for elapsedTime for how fast the framerates are going
+	}
+
 }
 
 func (paddle *paddle) aiUpdate(ball *ball) {
